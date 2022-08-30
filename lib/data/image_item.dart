@@ -19,37 +19,37 @@ class ImageItem {
   Future get status => loader.future;
 
   Future load(dynamic imageFile) async {
-    loader = Completer();
-
-    dynamic decodedImage;
-
-    if (imageFile is ImageItem) {
-      height = imageFile.height;
-      width = imageFile.width;
-
-      image = imageFile.image;
-      viewportRatio = imageFile.viewportRatio;
-
-      loader.complete(true);
-    } else if (imageFile is File || imageFile is XFile) {
-      image = await imageFile.readAsBytes();
-      decodedImage = await decodeImageFromList(image);
-    } else {
-      image = imageFile;
-      decodedImage = await decodeImageFromList(imageFile);
-    }
-
-    // image was decoded
-    if (decodedImage != null) {
-      // print(['height', viewportSize.height, decodedImage.height]);
-      // print(['width', viewportSize.width, decodedImage.width]);
-
-      height = decodedImage.height;
-      width = decodedImage.width;
-      viewportRatio = viewportSize.height / height;
-
-      loader.complete(true);
-    }
+    // loader = Completer();
+    //
+    // dynamic decodedImage;
+    //
+    // if (imageFile is ImageItem) {
+    //   height = imageFile.height;
+    //   width = imageFile.width;
+    //
+    //   image = imageFile.image;
+    //   viewportRatio = imageFile.viewportRatio;
+    //
+    //   loader.complete(true);
+    // } else if (imageFile is File || imageFile is XFile) {
+    //   image = await imageFile.readAsBytes();
+    //   decodedImage = await decodeImageFromList(image);
+    // } else {
+    //   image = imageFile;
+    //   decodedImage = await decodeImageFromList(imageFile);
+    // }
+    //
+    // // image was decoded
+    // if (decodedImage != null) {
+    //   // print(['height', viewportSize.height, decodedImage.height]);
+    //   // print(['width', viewportSize.width, decodedImage.width]);
+    //
+    //   height = decodedImage.height;
+    //   width = decodedImage.width;
+    //   viewportRatio = viewportSize.height / height;
+    //
+    //   loader.complete(true);
+    // }
 
     return true;
   }

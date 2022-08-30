@@ -18,6 +18,7 @@ import 'package:image_editor_plus/data/layer.dart';
 import 'package:image_editor_plus/layers/background_blur_layer.dart';
 import 'package:image_editor_plus/layers/background_layer.dart';
 import 'package:image_editor_plus/layers/image_layer.dart';
+import 'package:image_editor_plus/layers/tietu_layer.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_editor_plus/modules/all_emojies.dart';
 import 'package:image_editor_plus/layers/emoji_layer.dart';
@@ -31,7 +32,9 @@ import 'modules/colors_picker.dart';
 late Size viewportSize;
 double viewportRatio = 1;
 
-List<Layer> layers = [], undoLayers = [], removedLayers = [];
+List<BaseLayerData> layers = [],
+    undoLayers = [],
+    removedLayers = [];
 Map<String, String> _translations = {};
 
 String i18n(String sourceString) =>
@@ -46,16 +49,15 @@ class ImageEditor extends StatelessWidget {
   final int maxLength;
   final bool allowGallery, allowCamera, allowMultiple;
 
-  const ImageEditor(
-      {Key? key,
-      this.image,
-      this.images,
-      this.savePath,
-      this.allowCamera = false,
-      this.allowGallery = false,
-      this.allowMultiple = false,
-      this.maxLength = 99,
-      Color? appBar})
+  const ImageEditor({Key? key,
+    this.image,
+    this.images,
+    this.savePath,
+    this.allowCamera = false,
+    this.allowGallery = false,
+    this.allowMultiple = false,
+    this.maxLength = 99,
+    Color? appBar})
       : super(key: key);
 
   @override
@@ -146,7 +148,9 @@ class _MultiImageEditorState extends State<MultiImageEditor> {
 
   @override
   Widget build(BuildContext context) {
-    viewportSize = MediaQuery.of(context).size;
+    viewportSize = MediaQuery
+        .of(context)
+        .size;
 
     return Theme(
       data: ImageEditor.theme,
@@ -173,7 +177,7 @@ class _MultiImageEditorState extends State<MultiImageEditor> {
                 icon: const Icon(Icons.camera_alt),
                 onPressed: () async {
                   var selected =
-                      await picker.pickImage(source: ImageSource.camera);
+                  await picker.pickImage(source: ImageSource.camera);
 
                   if (selected == null) return;
 
@@ -221,9 +225,10 @@ class _MultiImageEditorState extends State<MultiImageEditor> {
                           var img = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => SingleImageEditor(
-                                image: image,
-                              ),
+                              builder: (context) =>
+                                  SingleImageEditor(
+                                    image: image,
+                                  ),
                             ),
                           );
 
@@ -275,9 +280,10 @@ class _MultiImageEditorState extends State<MultiImageEditor> {
                                 Uint8List? editedImage = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ImageFilters(
-                                      image: image.image,
-                                    ),
+                                    builder: (context) =>
+                                        ImageFilters(
+                                          image: image.image,
+                                        ),
                                   ),
                                 );
 
@@ -347,7 +353,7 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
       IconButton(
         icon: Icon(Icons.undo,
             color:
-                layers.length > 1 || removedLayers.isNotEmpty ? white : grey),
+            layers.length > 1 || removedLayers.isNotEmpty ? white : grey),
         onPressed: () {
           if (removedLayers.isNotEmpty) {
             layers.add(removedLayers.removeLast());
@@ -400,7 +406,7 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
           resetTransformation();
 
           var binaryIntList =
-              await screenshotController.capture(pixelRatio: pixelRatio);
+          await screenshotController.capture(pixelRatio: pixelRatio);
 
           Navigator.pop(context, binaryIntList);
         },
@@ -424,8 +430,11 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
   double y = 0;
   double z = 0;
 
-  double lastScaleFactor = 1, scaleFactor = 1;
-  double widthRatio = 1, heightRatio = 1, pixelRatio = 1;
+  double lastScaleFactor = 1,
+      scaleFactor = 1;
+  double widthRatio = 1,
+      heightRatio = 1,
+      pixelRatio = 1;
 
   resetTransformation() {
     scaleFactor = 1;
@@ -436,8 +445,10 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
 
   @override
   Widget build(BuildContext context) {
-    viewportSize = MediaQuery.of(context).size;
-
+    viewportSize = MediaQuery
+        .of(context)
+        .size;
+    // 图层的实现 使用stack
     var layersStack = Stack(
       children: layers.map((layerItem) {
         // Background layer
@@ -457,6 +468,15 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
             onUpdate: () {
               setState(() {});
             },
+          );
+        }
+
+        if (layerItem is TietuLayerData) {
+          return TietuLayer(
+            layerData: layerItem,
+            // onUpdate: () {
+            //   setState(() {});
+            // },
           );
         }
 
@@ -551,7 +571,8 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                       y,
                       0,
                       1 / scaleFactor,
-                    )..rotateY(flipValue),
+                    )
+                      ..rotateY(flipValue),
                     alignment: FractionalOffset.center,
                     child: layersStack,
                   ),
@@ -560,8 +581,12 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
             ),
           ),
         ),
+        // 底部功能栏，两种方式，启动新界面，或者一个界面类显示视图使用 showModalBottomSheet方法等
         bottomNavigationBar: Container(
-          height: 86 + MediaQuery.of(context).padding.bottom,
+          height: 86 + MediaQuery
+              .of(context)
+              .padding
+              .bottom,
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: const BoxDecoration(
             boxShadow: [
@@ -584,9 +609,10 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                     Uint8List? img = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ImageCropper(
-                          image: data!,
-                        ),
+                        builder: (context) =>
+                            ImageCropper(
+                              image: data!,
+                            ),
                       ),
                     );
 
@@ -606,9 +632,10 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                     var drawing = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ImageEditorDrawing(
-                          image: currentImage.image,
-                        ),
+                        builder: (context) =>
+                            ImageEditorDrawing(
+                              image: currentImage.image,
+                            ),
                       ),
                     );
 
@@ -619,6 +646,32 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                       layers.add(
                         ImageLayerData(
                           image: ImageItem(drawing),
+                        ),
+                      );
+
+                      setState(() {});
+                    }
+                  },
+                ),
+                BottomButton(
+                  icon: Icons.strikethrough_s_outlined,
+                  text: '贴图',
+                  onTap: () async {
+                    EmojiLayerData? layer = await showModalBottomSheet(
+                      context: context,
+                      backgroundColor: black,
+                      builder: (BuildContext context) {
+                        return const Emojies();
+                      },
+                    );
+
+                    if (layer != null) {
+                      undoLayers.clear();
+                      removedLayers.clear();
+
+                      layers.add(
+                        TietuLayerData(
+                          image: ImageItem(layer),
                         ),
                       );
 
@@ -718,8 +771,9 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                                 children: [
                                   Center(
                                       child: Text(
-                                    i18n('Slider Filter Color').toUpperCase(),
-                                  )),
+                                        i18n('Slider Filter Color')
+                                            .toUpperCase(),
+                                      )),
                                   const Divider(),
                                   const SizedBox(height: 20.0),
                                   Text(
@@ -856,9 +910,10 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                     Uint8List? editedImage = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ImageFilters(
-                          image: data!,
-                        ),
+                        builder: (context) =>
+                            ImageFilters(
+                              image: data!,
+                            ),
                       ),
                     );
 
@@ -968,7 +1023,7 @@ class ImageCropper extends StatefulWidget {
 
 class _ImageCropperState extends State<ImageCropper> {
   final GlobalKey<ExtendedImageEditorState> _controller =
-      GlobalKey<ExtendedImageEditorState>();
+  GlobalKey<ExtendedImageEditorState>();
 
   double? aspectRatio;
   double? aspectRatioOriginal;
@@ -1148,7 +1203,7 @@ class _ImageCropperState extends State<ImageCropper> {
     final Uint8List img = state.rawImageData;
 
     final image_editor.ImageEditorOption option =
-        image_editor.ImageEditorOption();
+    image_editor.ImageEditorOption();
 
     if (action.needCrop) {
       option.addOption(image_editor.ClipOption.fromRect(cropRect!));
@@ -1276,17 +1331,17 @@ class _ImageFiltersState extends State<ImageFilters> {
                 child: selectedFilter == PresetFilters.none
                     ? Container()
                     : selectedFilter.build(
-                        Slider(
-                          min: 0,
-                          max: 1,
-                          divisions: 100,
-                          value: filterOpacity,
-                          onChanged: (value) {
-                            filterOpacity = value;
-                            setState(() {});
-                          },
-                        ),
-                      ),
+                  Slider(
+                    min: 0,
+                    max: 1,
+                    divisions: 100,
+                    value: filterOpacity,
+                    onChanged: (value) {
+                      filterOpacity = value;
+                      setState(() {});
+                    },
+                  ),
+                ),
               ),
               SizedBox(
                 height: 120,
@@ -1366,7 +1421,7 @@ class FilterAppliedImage extends StatelessWidget {
       }
 
       final image_editor.ImageEditorOption option =
-          image_editor.ImageEditorOption();
+      image_editor.ImageEditorOption();
 
       option.addOption(image_editor.ColorOption(matrix: filter.matrix));
 
@@ -1397,7 +1452,7 @@ class FilterAppliedImage extends StatelessWidget {
   }
 }
 
-/// Show image drawing surface over image
+/// 在图片上显示绘图表面
 class ImageEditorDrawing extends StatefulWidget {
   final Uint8List image;
 
@@ -1513,8 +1568,14 @@ class _ImageEditorDrawingState extends State<ImageEditorDrawing> {
           ],
         ),
         body: Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: MediaQuery
+              .of(context)
+              .size
+              .height,
+          width: MediaQuery
+              .of(context)
+              .size
+              .width,
           color: currentColor == black ? white : black,
           child: HandSignature(
             control: control,
@@ -1584,6 +1645,7 @@ class ColorButton extends StatelessWidget {
   final Color color;
   final Function onTap;
   final bool isSelected;
+
   const ColorButton({
     Key? key,
     required this.color,

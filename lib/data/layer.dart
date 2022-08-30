@@ -3,11 +3,11 @@ import 'package:image_editor_plus/data/image_item.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 /// Layer class with some common properties
-class Layer {
+class BaseLayerData {
   late Offset offset;
   late double rotation, scale, opacity;
 
-  Layer({
+  BaseLayerData({
     Offset? offset,
     double? opacity,
     double? rotation,
@@ -21,7 +21,7 @@ class Layer {
 }
 
 /// Attributes used by [BackgroundLayer]
-class BackgroundLayerData extends Layer {
+class BackgroundLayerData extends BaseLayerData {
   ImageItem file;
 
   BackgroundLayerData({
@@ -30,7 +30,7 @@ class BackgroundLayerData extends Layer {
 }
 
 /// Attributes used by [EmojiLayer]
-class EmojiLayerData extends Layer {
+class EmojiLayerData extends BaseLayerData {
   String text;
   double size;
 
@@ -51,7 +51,7 @@ class EmojiLayerData extends Layer {
 }
 
 /// Attributes used by [ImageLayer]
-class ImageLayerData extends Layer {
+class ImageLayerData extends BaseLayerData {
   ImageItem image;
   double size;
 
@@ -64,15 +64,35 @@ class ImageLayerData extends Layer {
     double? rotation,
     double? scale,
   }) : super(
-          offset: offset,
-          opacity: opacity,
-          rotation: rotation,
-          scale: scale,
-        );
+    offset: offset,
+    opacity: opacity,
+    rotation: rotation,
+    scale: scale,
+  );
+}
+/// Attributes used by [ImageLayer]
+class TietuLayerData extends BaseLayerData {
+  ImageItem image;
+  double size;
+
+  TietuLayerData({
+    Key? key,
+    required this.image,
+    this.size = 64,
+    Offset? offset,
+    double? opacity,
+    double? rotation,
+    double? scale,
+  }) : super(
+    offset: offset,
+    opacity: opacity,
+    rotation: rotation,
+    scale: scale,
+  );
 }
 
 /// Attributes used by [TextLayer]
-class TextLayerData extends Layer {
+class TextLayerData extends BaseLayerData {
   String text;
   double size;
   Color color, background;
@@ -99,7 +119,7 @@ class TextLayerData extends Layer {
 }
 
 /// Attributes used by [BackgroundBlurLayer]
-class BackgroundBlurLayerData extends Layer {
+class BackgroundBlurLayerData extends BaseLayerData {
   Color color;
   double radius;
 
